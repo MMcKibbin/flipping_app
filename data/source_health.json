@@ -1,0 +1,22 @@
+{
+  "ebay": {
+    "status": "unhealthy",
+    "last_run_at": "2026-03-08T06:19:06.692167+00:00",
+    "last_success_at": null,
+    "last_failure_at": "2026-03-08T06:19:06.692167+00:00",
+    "last_error": "Missing EBAY_CLIENT_ID or EBAY_CLIENT_SECRET in .env",
+    "consecutive_failures": 3,
+    "total_successes": 0,
+    "total_failures": 3
+  },
+  "google_trends": {
+    "status": "healthy",
+    "last_run_at": "2026-03-08T06:23:51.799765+00:00",
+    "last_success_at": "2026-03-08T06:23:51.799765+00:00",
+    "last_failure_at": "2026-03-08T06:19:06.721670+00:00",
+    "last_error": null,
+    "consecutive_failures": 0,
+    "total_successes": 2,
+    "total_failures": 2
+  }
+}

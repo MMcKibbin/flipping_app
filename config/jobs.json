@@ -1,0 +1,15 @@
+{
+  "jobs": [
+    {
+      "source_name": "ebay",
+      "kwargs": {
+        "query": "milwaukee drill",
+        "limit": 20
+      }
+    },
+    {
+      "source_name": "google_trends",
+      "kwargs": {}
+    }
+  ]
+}

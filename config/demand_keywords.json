@@ -1,0 +1,16 @@
+{
+  "power_tools": {
+    "priority": 1,
+    "subcategories": {
+      "drills": {
+        "broad_keywords": [
+          "cordless drill"
+        ],
+        "brand_keywords": [
+          "dewalt drill"
+        ],
+        "model_keywords": []
+      }
+    }
+  }
+}
