@@ -20,19 +20,26 @@ class LiquidityFeatureBuilder:
             lc.brand,
             lc.asking_price,
             lf.demand_score,
-            lf.estimated_resale_mid
+            lf.estimated_resale_mid,
+            lf.price_discount_score
         FROM listings_clean lc
         LEFT JOIN listing_features lf
             ON lc.listing_id = lf.listing_id
         """
         return db.query(query)
-
     def compute_liquidity_score(self, row) -> float:
+
         demand = row["demand_score"]
         if demand is None or pd.isna(demand):
             demand = 0.0
         else:
             demand = float(demand)
+
+        discount = row["price_discount_score"]
+        if discount is None or pd.isna(discount):
+            discount = 0.0
+        else:
+            discount = float(discount)
 
         brand = row["brand"]
         brand_key = ""
@@ -41,7 +48,13 @@ class LiquidityFeatureBuilder:
 
         brand_factor = BRAND_LIQUIDITY.get(brand_key, 0.60)
 
-        score = min(100.0, (0.65 * min(demand, 100.0)) + (0.35 * (brand_factor * 100.0)))
+        score = min(
+            100.0,
+            (0.15 * min(demand, 100.0))
+            + (0.45 * (brand_factor * 100.0))
+            + (0.40 * min(discount, 100.0))
+        )
+
         return round(score, 2)
 
     def compute_days_to_sell(self, liquidity_score: float) -> float:

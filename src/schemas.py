@@ -12,6 +12,12 @@ class ListingRecord(BaseModel):
 
     title: str
     description: Optional[str] = None
+
+    category: Optional[str] = None
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    condition: Optional[str] = None
+
     price: Optional[float] = None
     currency: str = "CAD"
 

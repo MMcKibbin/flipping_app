@@ -8,8 +8,21 @@ def get_connection() -> duckdb.DuckDBPyConnection:
     return duckdb.connect(str(DB_PATH))
 
 
+import duckdb
+import pandas as pd
+
+from src.config import DB_PATH
+
+
+def get_connection() -> duckdb.DuckDBPyConnection:
+    return duckdb.connect(str(DB_PATH))
+
+
 def initialize_database() -> None:
     con = get_connection()
+
+    con.execute("DROP TABLE IF EXISTS raw_listings")
+    con.execute("DROP TABLE IF EXISTS google_demand_raw")
 
     con.execute(
         """
@@ -57,7 +70,10 @@ def initialize_database() -> None:
 
 def insert_records(records: list[dict]) -> None:
     if not records:
+        print("[WARN] No records to insert.")
         return
+
+    initialize_database()
 
     df = pd.DataFrame(records)
     con = get_connection()
@@ -90,11 +106,15 @@ def insert_records(records: list[dict]) -> None:
         """
     )
     con.close()
+    print(f"[OK] Inserted {len(records)} records into raw_listings")
 
 
 def insert_google_demand_records(records: list[dict]) -> None:
     if not records:
+        print("[WARN] No Google demand records to insert.")
         return
+
+    initialize_database()
 
     df = pd.DataFrame(records)
     con = get_connection()
@@ -114,3 +134,4 @@ def insert_google_demand_records(records: list[dict]) -> None:
         """
     )
     con.close()
+    print(f"[OK] Inserted {len(records)} records into google_demand_raw")

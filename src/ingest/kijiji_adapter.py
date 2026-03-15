@@ -1,8 +1,7 @@
-from datetime import datetime
-from urllib.parse import quote_plus
+from datetime import datetime, UTC
 import re
 import random
-import time 
+import time
 import requests
 from bs4 import BeautifulSoup
 
@@ -27,11 +26,18 @@ class KijijiAdapter(BaseListingAdapter):
 
         query = quote_plus(self.search_term)
 
-        if page == 1:
-            return f"https://www.kijiji.ca/b-calgary/{query}/k0l1700199"
+        if self.search_region.lower() == "calgary":
+            region_path = "b-calgary"
+            region_code = "l1700199"
+        else:
+            region_path = f"b-{self.search_region.lower()}"
+            region_code = "l1700000"
 
-        return f"https://www.kijiji.ca/b-calgary/{query}/page-{page}/k0l1700199"
-        
+        if page == 1:
+            return f"https://www.kijiji.ca/{region_path}/{query}/k0{region_code}"
+
+        return f"https://www.kijiji.ca/{region_path}/{query}/page-{page}/k0{region_code}"
+
     def fetch_page(self, page: int = 1) -> str:
         url = self.build_search_url(page=page)
 
@@ -69,16 +75,14 @@ class KijijiAdapter(BaseListingAdapter):
 
         full_text = self._safe_text(container)
 
-        # examples: $65, $130, $1,250
         price_match = re.search(r"\$\s?\d[\d,]*(?:\.\d{2})?", full_text)
         if price_match:
             return price_match.group(0)
 
-            # handle "Please Contact"
-            if "please contact" in full_text.lower():
-                return "CONTACT"
+        if "please contact" in full_text.lower():
+            return "CONTACT"
 
-            return ""
+        return ""
 
     def _extract_location(self, container) -> str:
         selectors = [
@@ -98,12 +102,8 @@ class KijijiAdapter(BaseListingAdapter):
 
         full_text = self._safe_text(container)
 
-        # examples:
-        # Calgary, AB
-        # Airdrie, AB
-        # Edmonton, Alberta
         loc_match = re.search(
-            r"\b([A-Z][a-zA-Z\s\-'&]+,\s*(?:AB|Alberta))\b",
+            r"\b([A-Z][a-zA-Z\s\-'&]+,\s*(?:AB|Alberta|BC|British Columbia|SK|Saskatchewan|ON|Ontario))\b",
             full_text
         )
         if loc_match:
@@ -125,8 +125,6 @@ class KijijiAdapter(BaseListingAdapter):
             text = self._safe_text(current)
             href_count = len(current.select("a[href]"))
 
-            # Heuristic:
-            # enough text to be a card, but not the whole page
             if 40 <= len(text) <= 4000 and href_count <= 25:
                 return current
 
@@ -166,6 +164,7 @@ class KijijiAdapter(BaseListingAdapter):
             price_text = self._extract_price(container)
             location_text = self._extract_location(container)
             description_text = self._safe_text(container)[:2000]
+
             if not price_text and debug_no_price_count < 10:
                 debug_no_price_count += 1
                 print(f"\n[DEBUG NO PRICE #{debug_no_price_count}]")
@@ -182,7 +181,7 @@ class KijijiAdapter(BaseListingAdapter):
                 "source_listing_id": source_listing_id,
                 "search_term": self.search_term,
                 "search_region": self.search_region,
-                "scraped_at": datetime.utcnow(),
+                "scraped_at": datetime.now(UTC),
                 "listing_url": listing_url,
                 "raw_title": title,
                 "raw_description": description_text,
@@ -194,12 +193,8 @@ class KijijiAdapter(BaseListingAdapter):
         return results
 
     def fetch_raw_records(self) -> list[dict]:
-        import time
-        import random
-
         all_records = []
         seen_urls = set()
-
         max_pages = 5
 
         for page in range(1, max_pages + 1):

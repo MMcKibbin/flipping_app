@@ -3,7 +3,7 @@ from contextlib import contextmanager
 import duckdb
 import pandas as pd
 
-DB_PATH = Path("data/db/flipping_app.duckdb")
+from src.config import DB_PATH
 
 
 class DuckDBManager:
