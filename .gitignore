@@ -1,6 +1,12 @@
-.env
+.venv/
 venv/
-__pychache__/
-*/duckdb
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 data/
+*.db
+*.duckdb
 *.log
+.ipynb_checkpoints
